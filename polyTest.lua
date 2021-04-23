@@ -13,7 +13,7 @@
         local json = require ("./json.lua/json")
         local compTools = require ("./AM-CompTools/compTools")
 
-    -- setup slog
+    -- setup slog()
         local function slog(str)
             log("&7[&6polyTest&7]§f "..str)
         end
