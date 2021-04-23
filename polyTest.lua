@@ -92,7 +92,7 @@
                 --     slog(#FUNC.gitZone["features"][FUNC.i]["polygon"])
                 -- end
             
-            FUNC.polygon = FUNC.gitZone["features"][FUNC.i]["polygon"][1]
+            FUNC.polygon = FUNC.gitZone["features"][FUNC.i]["polygon"]
 
             FUNC.useableZones[FUNC.name] = FUNC.polygon
         end
@@ -137,24 +137,38 @@
                     MAIN.point.x = MAIN.pX
                     MAIN.point.z = MAIN.pZ
 
-                MAIN.insideZones = {}
-                for key,value in pairs(MAIN.zoneJson) do
-                    -- put args in safe table
-                        MAIN.zoneName = key
-                        MAIN.polygon = value
-                    MAIN.isInsideZone = insidePolygon(MAIN.polygon, MAIN.point)
+                -- make list of all zones the player is currently inside
+                    MAIN.insideZones = {}
 
-                    if MAIN.isInsideZone then
+                    -- for each polygon
+                    for key,value in pairs(MAIN.zoneJson) do
+                        -- put args in safe table
+                            MAIN.zoneName = key
+                            MAIN.polygon = value
 
-                        -- replace "\n"s in name with " "
-                        MAIN.zoneName = string.gsub(MAIN.zoneName, "\n", " ")
-                        MAIN.insideZones[#MAIN.insideZones+1] = MAIN.zoneName
+                        -- count how many poly parts player is inside of.
+                        -- odd == inside polygon. even == outside polygon
+                            MAIN.insidePolyParts = 0
+                            -- for each poly part
+                            for key,value in pairs(MAIN.polygon) do
+                                -- put args in safe table
+                                    MAIN.polyPart = value
+
+                                if insidePolygon(MAIN.polyPart, MAIN.point) then
+                                    MAIN.insidePolyParts = MAIN.insidePolyParts + 1
+                                end
+                            end
+
+                            -- if MAIN.insidePolyParts is odd
+                            if MAIN.insidePolyParts % 2 ~= 0 then
+                                -- add polygon to list of polygons player is inside of
+                                    -- replace "\n"s in name with " "
+                                    MAIN.zoneName = string.gsub(MAIN.zoneName, "\n", " ")
+                                    MAIN.insideZones[#MAIN.insideZones+1] = MAIN.zoneName
+                            end
                     end
-                end
 
                 -- MAIN.insideZones = compTools.sortTableByKeys(MAIN.insideZones)
-
-                -- slog(MAIN.insideZones)
 
                 -- turn answers into string
                     if #MAIN.insideZones > 0 then
@@ -164,7 +178,6 @@
                             MAIN.outputGuiString = MAIN.outputGuiString .. MAIN.zoneNameToAppend .. "\n"
                         end
                     end
-                
 
             -- erase old render if it was rendered
                 if GLBL.GUI.zone ~= nil then
