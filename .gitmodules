@@ -4,3 +4,6 @@
 [submodule "Public-CivClassic-Nodes"]
 	path = Public-CivClassic-Nodes
 	url = https://github.com/SleepingFox8/Public-CivClassic-Nodes
+[submodule "AM-CompTools"]
+	path = AM-CompTools
+	url = https://github.com/SleepingFox8/AM-CompTools
