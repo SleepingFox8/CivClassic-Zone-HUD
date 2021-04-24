@@ -170,6 +170,6 @@
                 MAIN.drawn = 5
                 GLBL.GUI.zone = hud2D.newText("Current location: " .. MAIN.outputGuiString, 5, MAIN.drawn)
                 GLBL.GUI.zone.enableDraw()
-        sleep(100)
+        sleep(1000)
     end
     
