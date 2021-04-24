@@ -115,7 +115,8 @@
     -- get zone data from GitHub
 
         slog("downloading zones")
-        MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/SleepingFox8/data/master/land_claims.civmap.json")
+        -- MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/SleepingFox8/data/master/land_claims.civmap.json")
+        MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
 
         slog("parsing git zones")
         MAIN.zoneJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
