@@ -15,7 +15,7 @@
 
     -- setup slog()
         local function slog(str)
-            log("&7[&6polyTest&7]§f "..str)
+            log("&7[&6CivZoneHud&7]§f "..str)
         end
 
     -- toggle this script off if it is already running
@@ -83,17 +83,8 @@
 
         for key,value in pairs(FUNC.gitZone["features"]) do
             FUNC.i = key
-
             FUNC.name = FUNC.gitZone["features"][FUNC.i]["name"]
-
-            -- log zones with multiple polygons
-                -- if #FUNC.gitZone["features"][FUNC.i]["polygon"] ~= 1 then
-                --     slog(FUNC.name)
-                --     slog(#FUNC.gitZone["features"][FUNC.i]["polygon"])
-                -- end
-            
             FUNC.polygon = FUNC.gitZone["features"][FUNC.i]["polygon"]
-
             FUNC.useableZones[FUNC.name] = FUNC.polygon
         end
 
@@ -106,23 +97,16 @@
     --Stores variables for just MAIN function
         local MAIN = {}
 
-
-    slog("Started displaying current zones")
-
-    -- get zone data from file
-        -- MAIN.zoneJson = json.decode(compTools.readAll("./Public-CivClassic-Nodes/zones.json"))
-
     -- get zone data from GitHub
 
-        slog("downloading zones")
-        -- MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/SleepingFox8/data/master/land_claims.civmap.json")
+        slog("Downloading zones")
         MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
 
-        slog("parsing git zones")
+        slog("Parsing zones")
         MAIN.zoneJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
-        slog("done parsing git")
-        
 
+        slog("Started displaying zones")
+        
     -- initialize GUI table
         GLBL.GUI = GLBL.GUI or {}
 
@@ -169,8 +153,6 @@
                             end
                     end
 
-                -- MAIN.insideZones = compTools.sortTableByKeys(MAIN.insideZones)
-
                 -- turn answers into string
                     if #MAIN.insideZones > 0 then
                         MAIN.outputGuiString = ""
@@ -189,6 +171,5 @@
                 GLBL.GUI.zone = hud2D.newText("Current location: " .. MAIN.outputGuiString, 5, MAIN.drawn)
                 GLBL.GUI.zone.enableDraw()
         sleep(100)
-        -- slog("rendered")
     end
     
