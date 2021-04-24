@@ -4,8 +4,12 @@ This repository uses [advanced macros mod](https://www.curseforge.com/minecraft/
 
 ## Visualization
 
-For a visualization of zones, please see the ``Land Claims`` visualization on [ccmap](https://ccmap.github.io/)
+For an updated visualization of zones, please see the ``Land Claims`` visualization on [ccmap](https://ccmap.github.io/)
+
+![](https://i.imgur.com/BiRrODX.png)
 
 ## Usage
 
 Join the **CivClassic** minecraft server at ``mc.civclassic.com`` and run ``civZoneHud.lua``. You will see the name of your current location displayed in the top left of your screen.
+
+![](https://i.imgur.com/DjYgD2e.png)
