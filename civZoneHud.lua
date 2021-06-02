@@ -119,8 +119,6 @@
 
         slog("Downloading zones")
         MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
-        
-        MAIN.fileString = false
 
         -- end script if download failed
             if MAIN.fileString == false then
