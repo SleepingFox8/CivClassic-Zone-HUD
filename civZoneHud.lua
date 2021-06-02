@@ -97,16 +97,7 @@
             --store arguments in known scoped table
                 FUNC.gitZone = gitZone
 
-        FUNC.useableZones = {}
-
-        for key,value in pairs(FUNC.gitZone["features"]) do
-            FUNC.i = key
-            FUNC.name = FUNC.gitZone["features"][FUNC.i]["name"]
-            FUNC.polygon = FUNC.gitZone["features"][FUNC.i]["polygon"]
-            FUNC.useableZones[FUNC.name] = FUNC.polygon
-        end
-
-        return FUNC.useableZones
+        return FUNC.gitZone["features"]
     end
 
 -- Main program
@@ -149,11 +140,14 @@
                 -- make list of all zones the player is currently inside
                     MAIN.insideZones = {}
 
-                    -- for each polygon
-                    for key,value in pairs(MAIN.zoneJson) do
+                    -- for each polygon/feature
+                    for key,value in pairs(MAIN.zonesJson) do
                         -- put args in safe table
-                            MAIN.zoneName = key
-                            MAIN.polygon = value
+
+                            MAIN.feature = value
+
+                            MAIN.zoneName = MAIN.feature.name
+                            MAIN.polygon = MAIN.feature.polygon
 
                         -- count how many poly parts player is inside of.
                         -- odd == inside polygon. even == outside polygon
