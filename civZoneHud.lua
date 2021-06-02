@@ -54,6 +54,12 @@
         local http=httpRequest({url=url}, {url=url, requestMethod="GET", timeout=settings.httpTimeout})
         local file=http["input"]
         local err=http.getResponseCode()
+
+        -- return error if http is not the 200 aka "OK" status
+            if err ~= 200 then
+                return false
+            end
+
         local line=file:readLine()
         local output={}
         while line~=nil do
@@ -64,11 +70,23 @@
     end
 
     local function getFileStringFromURL(url)
-        local fileResults = getFile(url, 10000)
-        local fileString = ""
-        for key,value in pairs(fileResults) do 
-            fileString = fileString..value.."\n"
-        end
+        --function initialization
+            --initialize function table
+                local FUNC = {}
+            --store arguments in known scoped table
+                FUNC.url = url
+
+        -- get file from URL and store each line in array
+        local fileResults = getFile(FUNC.url, 10000)
+        -- propagate any errors to function caller
+            if fileResults == false then
+                return false
+            end
+        -- put all file lines into one string
+            local fileString = ""
+            for key,value in pairs(fileResults) do 
+                fileString = fileString..value.."\n"
+            end
         return fileString
     end
 
@@ -101,6 +119,14 @@
 
         slog("Downloading zones")
         MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
+        
+        MAIN.fileString = false
+
+        -- end script if download failed
+            if MAIN.fileString == false then
+                slog("Failed to download zones. Ending script.")
+                return 0
+            end
 
         slog("Parsing zones")
         MAIN.zoneJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
