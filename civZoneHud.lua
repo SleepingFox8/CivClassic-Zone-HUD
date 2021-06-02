@@ -126,10 +126,10 @@
                 return 0
             end
 
-        slog("Parsing zones")
-        MAIN.zoneJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
+    slog("Parsing zones")
+    MAIN.zonesJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
 
-        slog("Started displaying zones")
+    slog("Started displaying zones")
         
     -- initialize GUI table
         GLBL.GUI = GLBL.GUI or {}
@@ -191,8 +191,22 @@
                     GLBL.GUI.zone.disableDraw()
                 end
             -- render the HUD
+
+                -- determine state of flashing symbol
+                    if SCRIPT.flashing == nil then
+                        SCRIPT.flashing = false
+                    else
+                        SCRIPT.flashing = not SCRIPT.flashing
+                    end
+
+                if SCRIPT.flashing == true then
+                    MAIN.flashingSymbol = "█"
+                else
+                    MAIN.flashingSymbol = ":  "
+                end
+
                 MAIN.drawn = 5
-                GLBL.GUI.zone = hud2D.newText("Current location: " .. MAIN.outputGuiString, 5, MAIN.drawn)
+                GLBL.GUI.zone = hud2D.newText("Current location"..MAIN.flashingSymbol.." "..MAIN.outputGuiString, 5, MAIN.drawn)
                 GLBL.GUI.zone.enableDraw()
         sleep(1000)
     end
