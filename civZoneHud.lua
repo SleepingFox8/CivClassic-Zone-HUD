@@ -121,6 +121,10 @@
     MAIN.zonesJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
 
     slog("Started displaying zones")
+
+    -- provide link to player's current location on ccmap
+        MAIN.x, MAIN.y, MAIN.z = getPlayerBlockPos()
+        say("/g ".. getPlayer().name .." https://ccmap.github.io/#c=".. MAIN.x ..",".. MAIN.z ..",r200")
         
     -- initialize GUI table
         GLBL.GUI = GLBL.GUI or {}
