@@ -123,13 +123,9 @@
     slog("Started displaying zones")
 
     -- provide link to player's current location on ccmap
-        MAIN.x, MAIN.y, MAIN.z = getPlayerBlockPos()
-        MAIN.playerName = getPlayer().name
-        -- hardcode a fix for special player
-            if getPlayer().name == "SleepingFox8" then
-                MAIN.playerName = "fox5000102"
-            end
-        say("/g ".. MAIN.playerName .." https://ccmap.github.io/#c=".. MAIN.x ..",".. MAIN.z ..",r200")
+        MAIN.x, _, MAIN.z = getPlayerBlockPos()
+        MAIN.ccmapLink = "https://ccmap.github.io/#c=".. MAIN.x ..",".. MAIN.z ..",r200"
+        log("&7[&6CivZoneHud&7]§f &L&ULocation on ccmap", MAIN.ccmapLink)
         
     -- initialize GUI table
         GLBL.GUI = GLBL.GUI or {}
