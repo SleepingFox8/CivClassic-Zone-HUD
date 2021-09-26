@@ -90,16 +90,6 @@
         return fileString
     end
 
-    local function formatGitZonesToUseable(gitZone)
-        --function initialization
-            --initialize function table
-                local FUNC = {}
-            --store arguments in known scoped table
-                FUNC.gitZone = gitZone
-
-        return FUNC.gitZone["features"]
-    end
-
     function SCRIPT.pointInPolygon(x,z,polygon)
         --function initialization
             --initialize function table
@@ -149,6 +139,7 @@
                     slog("Failed to download land claims. Ending script.")
                     return 0
                 end
+            MAIN.zonesJson = json.decode(MAIN.fileString)
 
         -- download exclusion zones
             MAIN.exclusionZonesString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/exclusion_zones.civmap.json")
@@ -158,9 +149,6 @@
                     return 0
                 end
             MAIN.exclusionZonesData = json.decode(MAIN.exclusionZonesString)
-
-    slog("Parsing zones")
-    MAIN.zonesJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
 
     slog("Started displaying zones")
 
@@ -188,7 +176,7 @@
                     MAIN.insideZones = {}
 
                     -- for each polygon/feature
-                    for key,value in pairs(MAIN.zonesJson) do
+                    for key,value in pairs(MAIN.zonesJson.features) do
                         -- put args in safe table
 
                             MAIN.feature = value
