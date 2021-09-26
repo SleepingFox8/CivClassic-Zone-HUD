@@ -109,13 +109,22 @@
     -- get zone data from GitHub
 
         slog("Downloading zones")
-        MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
+        -- download land_claims
+            MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
+            -- end script if download failed
+                if MAIN.fileString == false then
+                    slog("Failed to download land claims. Ending script.")
+                    return 0
+                end
 
-        -- end script if download failed
-            if MAIN.fileString == false then
-                slog("Failed to download zones. Ending script.")
-                return 0
-            end
+        -- download exclusion zones
+            MAIN.exclusionZonesString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/exclusion_zones.civmap.json")
+            -- end script if download failed
+                if MAIN.exclusionZonesString == false then
+                    slog("Failed to download exclusion zones. Ending script.")
+                    return 0
+                end
+            MAIN.exclusionZonesData = json.decode(MAIN.exclusionZonesString)
 
     slog("Parsing zones")
     MAIN.zonesJson = formatGitZonesToUseable(json.decode(MAIN.fileString))
@@ -185,6 +194,54 @@
                         end
                     end
 
+            -- determine exclusion zone
+                MAIN.insideExclusionZones = {}
+
+                for key,value in pairs(MAIN.exclusionZonesData.features) do
+                    -- put args in safe table
+                        MAIN.feature = value
+
+                    -- rectangular
+                    if MAIN.feature.rectangle ~= nil then
+
+                        -- find x range
+                            if MAIN.feature.rectangle[1][1] >= MAIN.feature.rectangle[2][1] then
+                                MAIN.highestX = MAIN.feature.rectangle[1][1]
+                                MAIN.lowestX = MAIN.feature.rectangle[2][1]
+                            else
+                                MAIN.highestX = MAIN.feature.rectangle[2][1]
+                                MAIN.lowestX = MAIN.feature.rectangle[1][1]
+                            end
+                        -- find z range
+                            if MAIN.feature.rectangle[1][2] >= MAIN.feature.rectangle[2][2] then
+                                MAIN.highestZ = MAIN.feature.rectangle[1][2]
+                                MAIN.lowestZ = MAIN.feature.rectangle[2][2]
+                            else
+                                MAIN.highestZ = MAIN.feature.rectangle[2][2]
+                                MAIN.lowestZ = MAIN.feature.rectangle[1][2]
+                            end
+
+                        -- determine if player inside exclusion zone
+                            MAIN.px, _, MAIN.pz = getPlayerPos()
+
+                            -- if player inside rectangle
+                            if MAIN.px <= MAIN.highestX and MAIN.px >= MAIN.lowestX and MAIN.pz <= MAIN.highestZ and MAIN.pz >= MAIN.lowestZ then
+                                -- replace "\n"s in name with " "
+                                MAIN.exclusionZoneName = string.gsub(MAIN.feature.name, "\n", " ")
+                                -- append name of exclusion zone to list of exclusion zones player is inside of
+                                MAIN.insideExclusionZones[#MAIN.insideExclusionZones+1] = MAIN.exclusionZoneName
+                            end
+                    -- polygon
+                    elseif MAIN.feature.polygon ~= nil then
+
+                    end
+                end
+
+                -- determine exclusion zone string
+                    if #MAIN.insideExclusionZones > 0 then
+                        MAIN.exclusionZoneString = "Exclusion Zone: "..MAIN.insideExclusionZones[1]
+                    end
+
             -- erase old render if it was rendered
                 if GLBL.GUI.zone ~= nil then
                     GLBL.GUI.zone.disableDraw()
@@ -198,14 +255,23 @@
                         SCRIPT.flashing = not SCRIPT.flashing
                     end
 
-                if SCRIPT.flashing == true then
-                    MAIN.flashingSymbol = "█"
-                else
-                    MAIN.flashingSymbol = ":  "
-                end
+                -- determine flash symbol character
+                    if SCRIPT.flashing == true then
+                        MAIN.flashingSymbol = "█"
+                    else
+                        MAIN.flashingSymbol = ":  "
+                    end
+
+                -- set exclusion zone color
+                    if SCRIPT.flashing == false then
+                        MAIN.exclusionZoneColorString = "&c"
+                    else
+                        MAIN.exclusionZoneColorString = "&f"
+                    end
+                
 
                 MAIN.drawn = 5
-                GLBL.GUI.zone = hud2D.newText("Current location"..MAIN.flashingSymbol.." "..MAIN.outputGuiString, 5, MAIN.drawn)
+                GLBL.GUI.zone = hud2D.newText("Current location"..MAIN.flashingSymbol.." "..MAIN.outputGuiString..MAIN.exclusionZoneColorString..MAIN.exclusionZoneString, 5, MAIN.drawn)
                 GLBL.GUI.zone.enableDraw()
         sleep(1000)
     end
