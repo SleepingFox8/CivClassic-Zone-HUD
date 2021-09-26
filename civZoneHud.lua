@@ -29,7 +29,7 @@
 
 -- function declaration
 
-    local function insidePolygon(polygon, point)
+    local function insidePolyPart(polygon, point)
         local oddNodes = false
         local j = #polygon
         for i = 1, #polygon do
@@ -98,6 +98,39 @@
                 FUNC.gitZone = gitZone
 
         return FUNC.gitZone["features"]
+    end
+
+    function SCRIPT.pointInPolygon(x,z,polygon)
+        --function initialization
+            --initialize function table
+                local FUNC = {}
+            --store arguments in known scoped table
+                FUNC.x,FUNC.z,FUNC.polygon = x,z,polygon
+
+        -- create point
+            FUNC.point = {}
+            FUNC.point.x = FUNC.x
+            FUNC.point.z = FUNC.z
+
+        -- count how many poly parts the point is inside of.
+        -- odd == inside polygon. even == outside polygon
+            FUNC.insidePolyParts = 0
+            -- for each poly part
+            for key,value in pairs(FUNC.polygon) do
+                -- put args in safe table
+                    FUNC.polyPart = value
+
+                if insidePolyPart(FUNC.polyPart, FUNC.point) then
+                    FUNC.insidePolyParts = FUNC.insidePolyParts + 1
+                end
+            end
+
+        -- if FUNC.insidePolyParts is odd
+        if FUNC.insidePolyParts % 2 ~= 0 then
+            return true
+        else
+            return false
+        end
     end
 
 -- Main program
@@ -171,7 +204,7 @@
                                 -- put args in safe table
                                     MAIN.polyPart = value
 
-                                if insidePolygon(MAIN.polyPart, MAIN.point) then
+                                if insidePolyPart(MAIN.polyPart, MAIN.point) then
                                     MAIN.insidePolyParts = MAIN.insidePolyParts + 1
                                 end
                             end
@@ -233,13 +266,21 @@
                             end
                     -- polygon
                     elseif MAIN.feature.polygon ~= nil then
-
+                        MAIN.px, _, MAIN.pz = getPlayerPos()
+                        if SCRIPT.pointInPolygon(MAIN.px, MAIN.pz, MAIN.feature.polygon) then
+                            -- replace "\n"s in name with " "
+                            MAIN.exclusionZoneName = string.gsub(MAIN.feature.name, "\n", " ")
+                            -- append name of exclusion zone to list of exclusion zones player is inside of
+                            MAIN.insideExclusionZones[#MAIN.insideExclusionZones+1] = MAIN.exclusionZoneName
+                        end
                     end
                 end
 
                 -- determine exclusion zone string
                     if #MAIN.insideExclusionZones > 0 then
                         MAIN.exclusionZoneString = "Exclusion Zone: "..MAIN.insideExclusionZones[1]
+                    else
+                        MAIN.exclusionZoneString = ""
                     end
 
             -- erase old render if it was rendered
