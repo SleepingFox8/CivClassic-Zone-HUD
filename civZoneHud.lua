@@ -13,15 +13,15 @@
         local json = require ("./json.lua/json")
         local compTools = require ("./AM-CompTools/compTools")
 
-    -- setup slog()
-        local function slog(str)
+    -- setup SCRIPT.slog()
+        function SCRIPT.slog(str)
             log("&7[&6CivZoneHud&7]§f "..str)
         end
 
     -- toggle this script off if it is already running
         if compTools.anotherInstanceOfThisScriptIsRunning() then
             compTools.stopOtherInstancesOfThisScript()
-            slog("GUI stopped")
+            SCRIPT.slog("GUI stopped")
             GLBL.GUI.zone.disableDraw()
             -- silently end this script
                 return 0
@@ -29,12 +29,18 @@
 
 -- function declaration
 
-    local function insidePolyPart(polygon, point)
+    function SCRIPT.pointInPolyPart(x,z,polygon)
+        --function initialization
+            --initialize function table
+                local FUNC = {}
+            --store arguments in known scoped table
+                FUNC.x,FUNC.z,FUNC.polygon = x,z,polygon
+
         local oddNodes = false
-        local j = #polygon
-        for i = 1, #polygon do
-            if (polygon[i][2] < point.z and polygon[j][2] >= point.z or polygon[j][2] < point.z and polygon[i][2] >= point.z) then
-                if (polygon[i][1] + ( point.z - polygon[i][2] ) / (polygon[j][2] - polygon[i][2]) * (polygon[j][1] - polygon[i][1]) < point.x) then
+        local j = #FUNC.polygon
+        for i = 1, #FUNC.polygon do
+            if (FUNC.polygon[i][2] < FUNC.z and FUNC.polygon[j][2] >= FUNC.z or FUNC.polygon[j][2] < FUNC.z and FUNC.polygon[i][2] >= FUNC.z) then
+                if (FUNC.polygon[i][1] + ( FUNC.z - FUNC.polygon[i][2] ) / (FUNC.polygon[j][2] - FUNC.polygon[i][2]) * (FUNC.polygon[j][1] - FUNC.polygon[i][1]) < FUNC.x) then
                     oddNodes = not oddNodes;
                 end
             end
@@ -44,7 +50,7 @@
     end
 
     --gets a file from a url and puts it in a table
-    local function getFile(url, timeout)
+    function SCRIPT.getFile(url, timeout)
         local settings={}
         if not timeout then
             settings.httpTimeout=10000
@@ -69,7 +75,7 @@
         return output
     end
 
-    local function getFileStringFromURL(url)
+    function SCRIPT.getFileStringFromURL(url)
         --function initialization
             --initialize function table
                 local FUNC = {}
@@ -77,7 +83,7 @@
                 FUNC.url = url
 
         -- get file from URL and store each line in array
-        local fileResults = getFile(FUNC.url, 10000)
+        local fileResults = SCRIPT.getFile(FUNC.url, 10000)
         -- propagate any errors to function caller
             if fileResults == false then
                 return false
@@ -97,11 +103,6 @@
             --store arguments in known scoped table
                 FUNC.x,FUNC.z,FUNC.polygon = x,z,polygon
 
-        -- create point
-            FUNC.point = {}
-            FUNC.point.x = FUNC.x
-            FUNC.point.z = FUNC.z
-
         -- count how many poly parts the point is inside of.
         -- odd == inside polygon. even == outside polygon
             FUNC.insidePolyParts = 0
@@ -110,7 +111,7 @@
                 -- put args in safe table
                     FUNC.polyPart = value
 
-                if insidePolyPart(FUNC.polyPart, FUNC.point) then
+                if SCRIPT.pointInPolyPart(FUNC.x, FUNC.z, FUNC.polyPart) then
                     FUNC.insidePolyParts = FUNC.insidePolyParts + 1
                 end
             end
@@ -129,28 +130,28 @@
     --Stores variables for just MAIN function
         local MAIN = {}
 
-    -- get zone data from GitHub
+    -- download data from GitHub
 
-        slog("Downloading zones")
+        SCRIPT.slog("Downloading zones")
         -- download land_claims
-            MAIN.fileString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
+            MAIN.landClaimsString = SCRIPT.getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/land_claims.civmap.json")
             -- end script if download failed
-                if MAIN.fileString == false then
-                    slog("Failed to download land claims. Ending script.")
+                if MAIN.landClaimsString == false then
+                    SCRIPT.slog("Failed to download land claims. Ending script.")
                     return 0
                 end
-            MAIN.zonesJson = json.decode(MAIN.fileString)
+            MAIN.landClaimsJson = json.decode(MAIN.landClaimsString)
 
         -- download exclusion zones
-            MAIN.exclusionZonesString = getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/exclusion_zones.civmap.json")
+            MAIN.exclusionZonesString = SCRIPT.getFileStringFromURL("https://raw.githubusercontent.com/ccmap/data/master/exclusion_zones.civmap.json")
             -- end script if download failed
                 if MAIN.exclusionZonesString == false then
-                    slog("Failed to download exclusion zones. Ending script.")
+                    SCRIPT.slog("Failed to download exclusion zones. Ending script.")
                     return 0
                 end
             MAIN.exclusionZonesData = json.decode(MAIN.exclusionZonesString)
 
-    slog("Started displaying zones")
+    SCRIPT.slog("Started displaying zones")
 
     -- provide link to player's current location on ccmap
         MAIN.x, _, MAIN.z = getPlayerBlockPos()
@@ -164,19 +165,16 @@
         -- render zone as text in top left of screen
             -- determine current zone
 
-                MAIN.outputGuiString = "Unknown"
+                MAIN.outputLandClaimsGuiString = "Unknown"
 
-                -- get and format player's position
+                -- get player's position
                     MAIN.pX, MAIN.pY, MAIN.pZ = getPlayerPos()
-                    MAIN.point = {}
-                    MAIN.point.x = MAIN.pX
-                    MAIN.point.z = MAIN.pZ
 
                 -- make list of all zones the player is currently inside
-                    MAIN.insideZones = {}
+                    MAIN.insideLandClaims = {}
 
                     -- for each polygon/feature
-                    for key,value in pairs(MAIN.zonesJson.features) do
+                    for key,value in pairs(MAIN.landClaimsJson.features) do
                         -- put args in safe table
 
                             MAIN.feature = value
@@ -192,7 +190,7 @@
                                 -- put args in safe table
                                     MAIN.polyPart = value
 
-                                if insidePolyPart(MAIN.polyPart, MAIN.point) then
+                                if SCRIPT.pointInPolyPart(MAIN.pX, MAIN.pZ, MAIN.polyPart) then
                                     MAIN.insidePolyParts = MAIN.insidePolyParts + 1
                                 end
                             end
@@ -202,16 +200,16 @@
                                 -- add polygon to list of polygons player is inside of
                                     -- replace "\n"s in name with " "
                                     MAIN.zoneName = string.gsub(MAIN.zoneName, "\n", " ")
-                                    MAIN.insideZones[#MAIN.insideZones+1] = MAIN.zoneName
+                                    MAIN.insideLandClaims[#MAIN.insideLandClaims+1] = MAIN.zoneName
                             end
                     end
 
                 -- turn answers into string
-                    if #MAIN.insideZones > 0 then
-                        MAIN.outputGuiString = ""
-                        for key,value in pairs(MAIN.insideZones) do
+                    if #MAIN.insideLandClaims > 0 then
+                        MAIN.outputLandClaimsGuiString = ""
+                        for key,value in pairs(MAIN.insideLandClaims) do
                             MAIN.zoneNameToAppend = value
-                            MAIN.outputGuiString = MAIN.outputGuiString .. MAIN.zoneNameToAppend .. "\n"
+                            MAIN.outputLandClaimsGuiString = MAIN.outputLandClaimsGuiString .. MAIN.zoneNameToAppend .. "\n"
                         end
                     end
 
@@ -266,9 +264,9 @@
 
                 -- determine exclusion zone string
                     if #MAIN.insideExclusionZones > 0 then
-                        MAIN.exclusionZoneString = "Exclusion Zone: "..MAIN.insideExclusionZones[1]
+                        MAIN.outputExclusionZoneGuiString = "Exclusion Zone: "..MAIN.insideExclusionZones[1]
                     else
-                        MAIN.exclusionZoneString = ""
+                        MAIN.outputExclusionZoneGuiString = ""
                     end
 
             -- erase old render if it was rendered
@@ -300,7 +298,7 @@
                 
 
                 MAIN.drawn = 5
-                GLBL.GUI.zone = hud2D.newText("Land Claim"..MAIN.flashingSymbol.." "..MAIN.outputGuiString..MAIN.exclusionZoneColorString..MAIN.exclusionZoneString, 5, MAIN.drawn)
+                GLBL.GUI.zone = hud2D.newText("Land Claim"..MAIN.flashingSymbol.." "..MAIN.outputLandClaimsGuiString..MAIN.exclusionZoneColorString..MAIN.outputExclusionZoneGuiString, 5, MAIN.drawn)
                 GLBL.GUI.zone.enableDraw()
         sleep(1000)
     end
