@@ -312,7 +312,7 @@
                 
 
                 MAIN.drawn = 5
-                GLBL.GUI.zone = hud2D.newText("Current location"..MAIN.flashingSymbol.." "..MAIN.outputGuiString..MAIN.exclusionZoneColorString..MAIN.exclusionZoneString, 5, MAIN.drawn)
+                GLBL.GUI.zone = hud2D.newText("Land Claim"..MAIN.flashingSymbol.." "..MAIN.outputGuiString..MAIN.exclusionZoneColorString..MAIN.exclusionZoneString, 5, MAIN.drawn)
                 GLBL.GUI.zone.enableDraw()
         sleep(1000)
     end
